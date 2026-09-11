@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تشغيل الذكر الصوتي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#14213b;
+    --night-deep:#0d1626;
+    --gold:#c9a24b;
+    --gold-soft:#e3c988;
+    --ivory:#f6f1e4;
+    --ivory-dim:#cfc8b4;
+    --line: rgba(246,241,228,0.14);
+    --red:#c0685f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 700px at 20% -10%, rgba(201,162,75,0.10), transparent 60%),
+      radial-gradient(900px 600px at 100% 110%, rgba(201,162,75,0.08), transparent 55%),
+      var(--night);
+    color:var(--ivory);
+    font-family:'Cairo', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px 16px;
+  }
+
+  .frame{
+    width:100%;
+    max-width:520px;
+    position:relative;
+  }
+  .frame::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border:1px solid var(--line);
+    border-radius:18px;
+    pointer-events:none;
+  }
+
+  .card{
+    position:relative;
+    padding:32px 28px 26px;
+  }
+
+  .top-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:24px;
+  }
+  .status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color:var(--ivory-dim);
+  }
+  .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:#5b6a86;
+    transition:background .3s;
+  }
+  .dot.live{ background:var(--gold); box-shadow:0 0 0 4px rgba(201,162,75,0.18); }
+
+  /* upload zone */
+  .upload-zone{
+    border:1px dashed var(--line);
+    border-radius:12px;
+    padding:22px 18px;
+    text-align:center;
+    margin-bottom:22px;
+    transition:border-color .2s, background .2s;
+    cursor:pointer;
+  }
+  .upload-zone:hover, .upload-zone.drag{
+    border-color:var(--gold);
+    background:rgba(201,162,75,0.05);
+  }
+  .upload-zone input{ display:none; }
+  .upload-icon{ font-size:26px; margin-bottom:8px; }
+  .upload-label{ font-size:14px; color:var(--ivory-dim); }
+  .upload-label b{ color:var(--gold-soft); font-weight:600; }
+  .file-name{
+    margin-top:10px;
+    font-size:13px;
+    color:var(--gold-soft);
+    word-break:break-all;
+  }
+
+  .stage{
+    text-align:center;
+    padding:20px 8px 24px;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    margin-bottom:22px;
+  }
+  .eyebrow{ font-size:12px; color:var(--ivory-dim); margin-bottom:10px; }
+  .countdown{
+    font-variant-numeric: tabular-nums;
+    font-size:38px;
+    font-weight:700;
+    color:var(--gold-soft);
+    letter-spacing:1px;
+  }
+  .countdown-label{ margin-top:8px; font-size:13px; color:var(--ivory-dim); }
+
+  .test-btn{
+    margin-top:16px;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ivory-dim);
+    border-radius:999px;
+    padding:7px 16px;
+    font-family:inherit;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .test-btn:hover{ border-color:var(--gold-soft); color:var(--gold-soft); }
+  .test-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .controls{ display:flex; gap:10px; margin-bottom:20px; }
+  .btn{
+    flex:1;
+    padding:14px 16px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ivory);
+    font-family:inherit;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .2s, border-color .2s, transform .1s, opacity .2s;
+  }
+  .btn:active{ transform:scale(0.98); }
+  .btn.primary{ background:var(--gold); border-color:var(--gold); color:var(--night-deep); }
+  .btn.primary.stop{ background:transparent; border-color:#8a5252; color:#e0a3a3; }
+  .btn:hover{ border-color:var(--gold-soft); }
+  .btn.primary:hover{ background:var(--gold-soft); border-color:var(--gold-soft); }
+  .btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .btn:disabled:hover{ border-color:var(--line); }
+
+  .interval-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:13px;
+    color:var(--ivory-dim);
+    margin-bottom:20px;
+  }
+  .interval-row select{
+    background:rgba(246,241,228,0.04);
+    border:1px solid var(--line);
+    color:var(--ivory);
+    border-radius:8px;
+    padding:6px 10px;
+    font-family:inherit;
+    font-size:13px;
+  }
+
+  .footnote{
+    font-size:12px;
+    color:var(--ivory-dim);
+    line-height:1.9;
+    text-align:center;
+  }
+  .footnote span{ color:var(--gold-soft); }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <div class="card">
+
+    <div class="top-row">
+      <div class="status">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">متوقف</span>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="audioInput" accept="audio/*">
+      <div class="upload-icon">🎙️</div>
+      <div class="upload-label">دوس هنا وارفع <b>ملف الصوت</b> اللي عايز يتكرر</div>
+      <div class="file-name" id="fileName"></div>
+    </div>
+
+    <div class="stage">
+      <div class="eyebrow">هيتشغل كل</div>
+      <div class="countdown" id="countdownVal">٠٣:٠٠</div>
+      <div class="countdown-label">دقيقة : ثانية</div>
+      <button class="test-btn" id="testBtn" disabled>▶ تجربة الصوت دلوقتي</button>
+    </div>
+
+    <div class="interval-row">
+      <span>مدة التكرار</span>
+      <select id="intervalSelect">
+        <option value="1">كل دقيقة</option>
+        <option value="3" selected>كل ٣ دقايق</option>
+        <option value="5">كل ٥ دقايق</option>
+        <option value="10">كل ١٠ دقايق</option>
+      </select>
+    </div>
+
+    <div class="controls">
+      <button class="btn primary" id="toggleBtn" disabled>ابدأ التشغيل</button>
+    </div>
+
+    <div class="footnote">
+      البرنامج بيمنع الكمبيوتر من النوم <span>طول ما الصفحة دي مفتوحة وظاهرة على الشاشة</span>.
+      لازم ترفع الملف تاني لو قفلت الصفحة وفتحتها من جديد، لأن المتصفح مابيحفظش ملفات الصوت.
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const uploadZone = document.getElementById('uploadZone');
+  const audioInput = document.getElementById('audioInput');
+  const fileNameEl = document.getElementById('fileName');
+  const countdownEl = document.getElementById('countdownVal');
+  const toggleBtn = document.getElementById('toggleBtn');
+  const testBtn = document.getElementById('testBtn');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const intervalSelect = document.getElementById('intervalSelect');
+
+  let audioEl = null;
+  let objectUrl = null;
+  let intervalMinutes = 3;
+  let intervalMs = intervalMinutes * 60 * 1000;
+  let remainingMs = intervalMs;
+  let running = false;
+  let tickTimer = null;
+  let wakeLock = null;
+
+  const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  function toArabicNum(n){
+    return String(n).split('').map(ch => /\d/.test(ch) ? arabicDigits[+ch] : ch).join('');
+  }
+  function formatCountdown(ms){
+    const totalSec = Math.max(0, Math.ceil(ms/1000));
+    const m = Math.floor(totalSec/60);
+    const s = totalSec % 60;
+    return toArabicNum(String(m).padStart(2,'0')) + ':' + toArabicNum(String(s).padStart(2,'0'));
+  }
+
+  uploadZone.addEventListener('click', () => audioInput.click());
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag');
+    if(e.dataTransfer.files && e.dataTransfer.files[0]){
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+  audioInput.addEventListener('change', (e) => {
+    if(e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  function handleFile(file){
+    if(objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(file);
+    audioEl = new Audio(objectUrl);
+    fileNameEl.textContent = '✔ ' + file.name;
+    toggleBtn.disabled = false;
+    testBtn.disabled = false;
+  }
+
+  function playSound(){
+    if(!audioEl) return;
+    const clone = new Audio(objectUrl);
+    clone.play().catch(() => { /* المتصفح ممكن يمنع التشغيل التلقائي لحد ما المستخدم يتفاعل مرة واحدة */ });
+  }
+
+  testBtn.addEventListener('click', playSound);
+
+  intervalSelect.addEventListener('change', () => {
+    intervalMinutes = parseFloat(intervalSelect.value);
+    intervalMs = intervalMinutes * 60 * 1000;
+    if(!running){
+      remainingMs = intervalMs;
+      countdownEl.textContent = formatCountdown(remainingMs);
+    }
+  });
+
+  async function acquireWakeLock(){
+    try{
+      if('wakeLock' in navigator){
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      }
+    }catch(e){ /* ignore */ }
+  }
+  function releaseWakeLock(){
+    if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
+  }
+  document.addEventListener('visibilitychange', async () => {
+    if(running && document.visibilityState === 'visible' && !wakeLock){
+      await acquireWakeLock();
+    }
+  });
+
+  function tick(){
+    remainingMs -= 1000;
+    if(remainingMs <= 0){
+      playSound();
+      remainingMs = intervalMs;
+    }
+    countdownEl.textContent = formatCountdown(remainingMs);
+  }
+
+  function start(){
+    if(!audioEl) return;
+    running = true;
+    remainingMs = intervalMs;
+    statusDot.classList.add('live');
+    statusText.textContent = 'شغال';
+    toggleBtn.textContent = 'إيقاف التشغيل';
+    toggleBtn.classList.add('stop');
+    intervalSelect.disabled = true;
+    countdownEl.textContent = formatCountdown(remainingMs);
+    playSound(); // تشغيل فوري أول ما تدوس ابدأ
+    tickTimer = setInterval(tick, 1000);
+    acquireWakeLock();
+  }
+
+  function stop(){
+    running = false;
+    statusDot.classList.remove('live');
+    statusText.textContent = 'متوقف';
+    toggleBtn.textContent = 'ابدأ التشغيل';
+    toggleBtn.classList.remove('stop');
+    intervalSelect.disabled = false;
+    clearInterval(tickTimer);
+    releaseWakeLock();
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    running ? stop() : start();
+  });
+
+  countdownEl.textContent = formatCountdown(remainingMs);
+})();
+</script>
+
+</body>
+</html>
