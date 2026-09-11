@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تذكير الصلاة على النبي ﷺ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#14213b;
+    --night-deep:#0d1626;
+    --gold:#c9a24b;
+    --gold-soft:#e3c988;
+    --ivory:#f6f1e4;
+    --ivory-dim:#cfc8b4;
+    --line: rgba(246,241,228,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 700px at 20% -10%, rgba(201,162,75,0.10), transparent 60%),
+      radial-gradient(900px 600px at 100% 110%, rgba(201,162,75,0.08), transparent 55%),
+      var(--night);
+    color:var(--ivory);
+    font-family:'Cairo', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px 16px;
+  }
+
+  .frame{
+    width:100%;
+    max-width:560px;
+    position:relative;
+  }
+
+  /* subtle geometric border motif */
+  .frame::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border:1px solid var(--line);
+    border-radius:18px;
+    pointer-events:none;
+  }
+
+  .card{
+    position:relative;
+    padding:34px 30px 26px;
+  }
+
+  .top-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:22px;
+  }
+  .status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color:var(--ivory-dim);
+  }
+  .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:#5b6a86;
+    transition:background .3s;
+  }
+  .dot.live{ background:var(--gold); box-shadow:0 0 0 4px rgba(201,162,75,0.18); }
+
+  .sound-toggle{
+    background:none;border:1px solid var(--line);color:var(--ivory-dim);
+    border-radius:999px; padding:6px 12px; font-family:inherit; font-size:12px;
+    cursor:pointer;
+  }
+  .sound-toggle.on{ color:var(--gold-soft); border-color:rgba(201,162,75,0.4); }
+
+  .stage{
+    text-align:center;
+    padding:26px 8px 30px;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    margin-bottom:22px;
+  }
+
+  .eyebrow{
+    font-size:12px;
+    color:var(--ivory-dim);
+    margin-bottom:14px;
+  }
+
+  #dhikrText{
+    font-family:'Amiri', serif;
+    font-weight:700;
+    font-size:clamp(24px, 5vw, 34px);
+    line-height:1.9;
+    color:var(--ivory);
+    opacity:0;
+    transform:translateY(6px);
+    transition:opacity .6s ease, transform .6s ease;
+  }
+  #dhikrText.show{ opacity:1; transform:translateY(0); }
+
+  .countdown{
+    margin-top:18px;
+    font-variant-numeric: tabular-nums;
+    font-size:14px;
+    color:var(--ivory-dim);
+  }
+  .countdown b{ color:var(--gold-soft); font-weight:600; }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .btn{
+    flex:1;
+    padding:13px 16px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ivory);
+    font-family:inherit;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .2s, border-color .2s, transform .1s;
+  }
+  .btn:active{ transform:scale(0.98); }
+  .btn.primary{
+    background:var(--gold);
+    border-color:var(--gold);
+    color:var(--night-deep);
+  }
+  .btn.primary.stop{
+    background:transparent;
+    border-color:#8a5252;
+    color:#e0a3a3;
+  }
+  .btn:hover{ border-color:var(--gold-soft); }
+  .btn.primary:hover{ background:var(--gold-soft); border-color:var(--gold-soft); }
+
+  .editor{
+    border-top:1px solid var(--line);
+    padding-top:18px;
+  }
+  .editor label{
+    display:block;
+    font-size:13px;
+    color:var(--ivory-dim);
+    margin-bottom:10px;
+  }
+  textarea{
+    width:100%;
+    min-height:78px;
+    resize:vertical;
+    background:rgba(246,241,228,0.04);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--ivory);
+    font-family:'Amiri', serif;
+    font-size:17px;
+    padding:12px 14px;
+    line-height:1.7;
+  }
+  textarea:focus{ outline:none; border-color:var(--gold); }
+
+  .editor-row{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+  }
+  .save-btn{
+    padding:10px 18px;
+    border-radius:8px;
+    border:1px solid var(--gold);
+    background:transparent;
+    color:var(--gold-soft);
+    font-family:inherit;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .save-btn:hover{ background:rgba(201,162,75,0.12); }
+
+  .saved-note{
+    font-size:12px;
+    color:var(--gold-soft);
+    opacity:0;
+    transition:opacity .3s;
+    align-self:center;
+  }
+  .saved-note.show{ opacity:1; }
+
+  .footnote{
+    margin-top:22px;
+    font-size:12px;
+    color:var(--ivory-dim);
+    line-height:1.9;
+    text-align:center;
+  }
+  .footnote span{ color:var(--gold-soft); }
+
+  @media (prefers-reduced-motion: reduce){
+    #dhikrText{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <div class="card">
+
+    <div class="top-row">
+      <div class="status">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">متوقف</span>
+      </div>
+      <button class="sound-toggle" id="soundToggle">🔔 الصوت: شغال</button>
+    </div>
+
+    <div class="stage">
+      <div class="eyebrow">كل ٣ دقايق</div>
+      <div id="dhikrText">اللهم صلِّ وسلم على نبينا محمد</div>
+      <div class="countdown">التالي بعد <b id="countdownVal">٠٣:٠٠</b></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn primary" id="toggleBtn">ابدأ التذكير</button>
+    </div>
+
+    <div class="editor">
+      <label for="customInput">غيّر نص الذكر (اختياري)</label>
+      <textarea id="customInput" placeholder="اكتب هنا الذكر اللي عايز يتكرر... مثال: اللهم صلِّ على محمد وعلى آل محمد"></textarea>
+      <div class="editor-row">
+        <button class="save-btn" id="saveBtn">احفظ الذكر</button>
+        <span class="saved-note" id="savedNote">تم الحفظ ✓</span>
+      </div>
+    </div>
+
+    <div class="footnote">
+      البرنامج بيمنع الكمبيوتر من النوم <span>طول ما الصفحة دي مفتوحة وظاهرة على الشاشة</span>.
+      لو قفلت التاب أو قفلت الجهاز، التذكير بيوقف.
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const DEFAULT_DHIKR = "اللهم صلِّ وسلم على نبينا محمد";
+  const INTERVAL_MS = 3 * 60 * 1000;
+
+  const dhikrEl = document.getElementById('dhikrText');
+  const countdownEl = document.getElementById('countdownVal');
+  const toggleBtn = document.getElementById('toggleBtn');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const customInput = document.getElementById('customInput');
+  const saveBtn = document.getElementById('saveBtn');
+  const savedNote = document.getElementById('savedNote');
+  const soundToggle = document.getElementById('soundToggle');
+
+  let currentDhikr = DEFAULT_DHIKR;
+  let running = false;
+  let remainingMs = INTERVAL_MS;
+  let tickTimer = null;
+  let wakeLock = null;
+  let soundOn = true;
+
+  const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  function toArabicNum(n){
+    return String(n).split('').map(ch => /\d/.test(ch) ? arabicDigits[+ch] : ch).join('');
+  }
+
+  function formatCountdown(ms){
+    const totalSec = Math.max(0, Math.ceil(ms/1000));
+    const m = Math.floor(totalSec/60);
+    const s = totalSec % 60;
+    const mm = String(m).padStart(2,'0');
+    const ss = String(s).padStart(2,'0');
+    return toArabicNum(mm) + ':' + toArabicNum(ss);
+  }
+
+  function playChime(){
+    if(!soundOn) return;
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = 660;
+      g.gain.value = 0.0001;
+      o.connect(g); g.connect(ctx.destination);
+      const now = ctx.currentTime;
+      g.gain.exponentialRampToValueAtTime(0.12, now + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+      o.start(now);
+      o.stop(now + 1);
+      o.onended = () => ctx.close();
+    }catch(e){ /* audio not available, ignore */ }
+  }
+
+  function showDhikr(){
+    dhikrEl.textContent = currentDhikr;
+    dhikrEl.classList.remove('show');
+    void dhikrEl.offsetWidth; // restart animation
+    dhikrEl.classList.add('show');
+    playChime();
+  }
+
+  async function acquireWakeLock(){
+    try{
+      if('wakeLock' in navigator){
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      }
+    }catch(e){
+      // wake lock might fail (e.g. battery saver); silently continue
+    }
+  }
+  function releaseWakeLock(){
+    if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
+  }
+  document.addEventListener('visibilitychange', async () => {
+    if(running && document.visibilityState === 'visible' && !wakeLock){
+      await acquireWakeLock();
+    }
+  });
+
+  function tick(){
+    remainingMs -= 1000;
+    if(remainingMs <= 0){
+      showDhikr();
+      remainingMs = INTERVAL_MS;
+    }
+    countdownEl.textContent = formatCountdown(remainingMs);
+  }
+
+  function start(){
+    running = true;
+    remainingMs = INTERVAL_MS;
+    statusDot.classList.add('live');
+    statusText.textContent = 'شغال';
+    toggleBtn.textContent = 'إيقاف التذكير';
+    toggleBtn.classList.add('stop');
+    countdownEl.textContent = formatCountdown(remainingMs);
+    showDhikr(); // اظهار الذكر فورًا عند البدء
+    tickTimer = setInterval(tick, 1000);
+    acquireWakeLock();
+  }
+
+  function stop(){
+    running = false;
+    statusDot.classList.remove('live');
+    statusText.textContent = 'متوقف';
+    toggleBtn.textContent = 'ابدأ التذكير';
+    toggleBtn.classList.remove('stop');
+    clearInterval(tickTimer);
+    releaseWakeLock();
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    running ? stop() : start();
+  });
+
+  soundToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundToggle.textContent = soundOn ? '🔔 الصوت: شغال' : '🔕 الصوت: مقفول';
+    soundToggle.classList.toggle('on', soundOn);
+  });
+
+  async function loadSaved(){
+    try{
+      const res = await window.storage.get('custom-dhikr');
+      if(res && res.value){
+        currentDhikr = res.value;
+        customInput.value = res.value;
+        dhikrEl.textContent = currentDhikr;
+      } else {
+        customInput.value = '';
+      }
+    }catch(e){
+      customInput.value = '';
+    }
+  }
+
+  saveBtn.addEventListener('click', async () => {
+    const val = customInput.value.trim();
+    currentDhikr = val.length ? val : DEFAULT_DHIKR;
+    try{
+      await window.storage.set('custom-dhikr', currentDhikr);
+    }catch(e){ /* storage may be unavailable, still update in-memory */ }
+    savedNote.classList.add('show');
+    setTimeout(() => savedNote.classList.remove('show'), 1800);
+    if(!running){
+      dhikrEl.textContent = currentDhikr;
+    }
+  });
+
+  loadSaved();
+  countdownEl.textContent = formatCountdown(remainingMs);
+})();
+</script>
+
+</body>
+</html>
