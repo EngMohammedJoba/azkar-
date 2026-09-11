@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تذكير الصلاة على النبي ﷺ</title>
+<title>تشغيل الذكر الصوتي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --night:#14213b;
@@ -16,6 +16,7 @@
     --ivory:#f6f1e4;
     --ivory-dim:#cfc8b4;
     --line: rgba(246,241,228,0.14);
+    --red:#c0685f;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -35,11 +36,9 @@
 
   .frame{
     width:100%;
-    max-width:560px;
+    max-width:520px;
     position:relative;
   }
-
-  /* subtle geometric border motif */
   .frame::before{
     content:"";
     position:absolute;
@@ -51,14 +50,14 @@
 
   .card{
     position:relative;
-    padding:34px 30px 26px;
+    padding:32px 28px 26px;
   }
 
   .top-row{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:22px;
+    margin-bottom:24px;
   }
   .status{
     display:flex;
@@ -74,55 +73,66 @@
   }
   .dot.live{ background:var(--gold); box-shadow:0 0 0 4px rgba(201,162,75,0.18); }
 
-  .sound-toggle{
-    background:none;border:1px solid var(--line);color:var(--ivory-dim);
-    border-radius:999px; padding:6px 12px; font-family:inherit; font-size:12px;
+  /* upload zone */
+  .upload-zone{
+    border:1px dashed var(--line);
+    border-radius:12px;
+    padding:22px 18px;
+    text-align:center;
+    margin-bottom:22px;
+    transition:border-color .2s, background .2s;
     cursor:pointer;
   }
-  .sound-toggle.on{ color:var(--gold-soft); border-color:rgba(201,162,75,0.4); }
+  .upload-zone:hover, .upload-zone.drag{
+    border-color:var(--gold);
+    background:rgba(201,162,75,0.05);
+  }
+  .upload-zone input{ display:none; }
+  .upload-icon{ font-size:26px; margin-bottom:8px; }
+  .upload-label{ font-size:14px; color:var(--ivory-dim); }
+  .upload-label b{ color:var(--gold-soft); font-weight:600; }
+  .file-name{
+    margin-top:10px;
+    font-size:13px;
+    color:var(--gold-soft);
+    word-break:break-all;
+  }
 
   .stage{
     text-align:center;
-    padding:26px 8px 30px;
+    padding:20px 8px 24px;
     border-top:1px solid var(--line);
     border-bottom:1px solid var(--line);
     margin-bottom:22px;
   }
-
-  .eyebrow{
-    font-size:12px;
-    color:var(--ivory-dim);
-    margin-bottom:14px;
-  }
-
-  #dhikrText{
-    font-family:'Amiri', serif;
-    font-weight:700;
-    font-size:clamp(24px, 5vw, 34px);
-    line-height:1.9;
-    color:var(--ivory);
-    opacity:0;
-    transform:translateY(6px);
-    transition:opacity .6s ease, transform .6s ease;
-  }
-  #dhikrText.show{ opacity:1; transform:translateY(0); }
-
+  .eyebrow{ font-size:12px; color:var(--ivory-dim); margin-bottom:10px; }
   .countdown{
-    margin-top:18px;
     font-variant-numeric: tabular-nums;
-    font-size:14px;
-    color:var(--ivory-dim);
+    font-size:38px;
+    font-weight:700;
+    color:var(--gold-soft);
+    letter-spacing:1px;
   }
-  .countdown b{ color:var(--gold-soft); font-weight:600; }
+  .countdown-label{ margin-top:8px; font-size:13px; color:var(--ivory-dim); }
 
-  .controls{
-    display:flex;
-    gap:10px;
-    margin-bottom:22px;
+  .test-btn{
+    margin-top:16px;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ivory-dim);
+    border-radius:999px;
+    padding:7px 16px;
+    font-family:inherit;
+    font-size:13px;
+    cursor:pointer;
   }
+  .test-btn:hover{ border-color:var(--gold-soft); color:var(--gold-soft); }
+  .test-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .controls{ display:flex; gap:10px; margin-bottom:20px; }
   .btn{
     flex:1;
-    padding:13px 16px;
+    padding:14px 16px;
     border-radius:10px;
     border:1px solid var(--line);
     background:transparent;
@@ -131,86 +141,41 @@
     font-size:15px;
     font-weight:600;
     cursor:pointer;
-    transition:background .2s, border-color .2s, transform .1s;
+    transition:background .2s, border-color .2s, transform .1s, opacity .2s;
   }
   .btn:active{ transform:scale(0.98); }
-  .btn.primary{
-    background:var(--gold);
-    border-color:var(--gold);
-    color:var(--night-deep);
-  }
-  .btn.primary.stop{
-    background:transparent;
-    border-color:#8a5252;
-    color:#e0a3a3;
-  }
+  .btn.primary{ background:var(--gold); border-color:var(--gold); color:var(--night-deep); }
+  .btn.primary.stop{ background:transparent; border-color:#8a5252; color:#e0a3a3; }
   .btn:hover{ border-color:var(--gold-soft); }
   .btn.primary:hover{ background:var(--gold-soft); border-color:var(--gold-soft); }
+  .btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .btn:disabled:hover{ border-color:var(--line); }
 
-  .editor{
-    border-top:1px solid var(--line);
-    padding-top:18px;
-  }
-  .editor label{
-    display:block;
+  .interval-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
     font-size:13px;
     color:var(--ivory-dim);
-    margin-bottom:10px;
+    margin-bottom:20px;
   }
-  textarea{
-    width:100%;
-    min-height:78px;
-    resize:vertical;
+  .interval-row select{
     background:rgba(246,241,228,0.04);
     border:1px solid var(--line);
-    border-radius:10px;
     color:var(--ivory);
-    font-family:'Amiri', serif;
-    font-size:17px;
-    padding:12px 14px;
-    line-height:1.7;
-  }
-  textarea:focus{ outline:none; border-color:var(--gold); }
-
-  .editor-row{
-    display:flex;
-    gap:10px;
-    margin-top:12px;
-  }
-  .save-btn{
-    padding:10px 18px;
     border-radius:8px;
-    border:1px solid var(--gold);
-    background:transparent;
-    color:var(--gold-soft);
+    padding:6px 10px;
     font-family:inherit;
-    font-size:14px;
-    font-weight:600;
-    cursor:pointer;
+    font-size:13px;
   }
-  .save-btn:hover{ background:rgba(201,162,75,0.12); }
-
-  .saved-note{
-    font-size:12px;
-    color:var(--gold-soft);
-    opacity:0;
-    transition:opacity .3s;
-    align-self:center;
-  }
-  .saved-note.show{ opacity:1; }
 
   .footnote{
-    margin-top:22px;
     font-size:12px;
     color:var(--ivory-dim);
     line-height:1.9;
     text-align:center;
   }
   .footnote span{ color:var(--gold-soft); }
-
-  @media (prefers-reduced-motion: reduce){
-    #dhikrText{ transition:none; }
-  }
 </style>
 </head>
 <body>
@@ -223,31 +188,39 @@
         <span class="dot" id="statusDot"></span>
         <span id="statusText">متوقف</span>
       </div>
-      <button class="sound-toggle" id="soundToggle">🔔 الصوت: شغال</button>
+    </div>
+
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="audioInput" accept="audio/*">
+      <div class="upload-icon">🎙️</div>
+      <div class="upload-label">دوس هنا وارفع <b>ملف الصوت</b> اللي عايز يتكرر</div>
+      <div class="file-name" id="fileName"></div>
     </div>
 
     <div class="stage">
-      <div class="eyebrow">كل ٣ دقايق</div>
-      <div id="dhikrText">اللهم صلِّ وسلم على نبينا محمد</div>
-      <div class="countdown">التالي بعد <b id="countdownVal">٠٣:٠٠</b></div>
+      <div class="eyebrow">هيتشغل كل</div>
+      <div class="countdown" id="countdownVal">٠٣:٠٠</div>
+      <div class="countdown-label">دقيقة : ثانية</div>
+      <button class="test-btn" id="testBtn" disabled>▶ تجربة الصوت دلوقتي</button>
+    </div>
+
+    <div class="interval-row">
+      <span>مدة التكرار</span>
+      <select id="intervalSelect">
+        <option value="1">كل دقيقة</option>
+        <option value="3" selected>كل ٣ دقايق</option>
+        <option value="5">كل ٥ دقايق</option>
+        <option value="10">كل ١٠ دقايق</option>
+      </select>
     </div>
 
     <div class="controls">
-      <button class="btn primary" id="toggleBtn">ابدأ التذكير</button>
-    </div>
-
-    <div class="editor">
-      <label for="customInput">غيّر نص الذكر (اختياري)</label>
-      <textarea id="customInput" placeholder="اكتب هنا الذكر اللي عايز يتكرر... مثال: اللهم صلِّ على محمد وعلى آل محمد"></textarea>
-      <div class="editor-row">
-        <button class="save-btn" id="saveBtn">احفظ الذكر</button>
-        <span class="saved-note" id="savedNote">تم الحفظ ✓</span>
-      </div>
+      <button class="btn primary" id="toggleBtn" disabled>ابدأ التشغيل</button>
     </div>
 
     <div class="footnote">
       البرنامج بيمنع الكمبيوتر من النوم <span>طول ما الصفحة دي مفتوحة وظاهرة على الشاشة</span>.
-      لو قفلت التاب أو قفلت الجهاز، التذكير بيوقف.
+      لازم ترفع الملف تاني لو قفلت الصفحة وفتحتها من جديد، لأن المتصفح مابيحفظش ملفات الصوت.
     </div>
 
   </div>
@@ -255,66 +228,75 @@
 
 <script>
 (function(){
-  const DEFAULT_DHIKR = "اللهم صلِّ وسلم على نبينا محمد";
-  const INTERVAL_MS = 3 * 60 * 1000;
-
-  const dhikrEl = document.getElementById('dhikrText');
+  const uploadZone = document.getElementById('uploadZone');
+  const audioInput = document.getElementById('audioInput');
+  const fileNameEl = document.getElementById('fileName');
   const countdownEl = document.getElementById('countdownVal');
   const toggleBtn = document.getElementById('toggleBtn');
+  const testBtn = document.getElementById('testBtn');
   const statusDot = document.getElementById('statusDot');
   const statusText = document.getElementById('statusText');
-  const customInput = document.getElementById('customInput');
-  const saveBtn = document.getElementById('saveBtn');
-  const savedNote = document.getElementById('savedNote');
-  const soundToggle = document.getElementById('soundToggle');
+  const intervalSelect = document.getElementById('intervalSelect');
 
-  let currentDhikr = DEFAULT_DHIKR;
+  let audioEl = null;
+  let objectUrl = null;
+  let intervalMinutes = 3;
+  let intervalMs = intervalMinutes * 60 * 1000;
+  let remainingMs = intervalMs;
   let running = false;
-  let remainingMs = INTERVAL_MS;
   let tickTimer = null;
   let wakeLock = null;
-  let soundOn = true;
 
   const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
   function toArabicNum(n){
     return String(n).split('').map(ch => /\d/.test(ch) ? arabicDigits[+ch] : ch).join('');
   }
-
   function formatCountdown(ms){
     const totalSec = Math.max(0, Math.ceil(ms/1000));
     const m = Math.floor(totalSec/60);
     const s = totalSec % 60;
-    const mm = String(m).padStart(2,'0');
-    const ss = String(s).padStart(2,'0');
-    return toArabicNum(mm) + ':' + toArabicNum(ss);
+    return toArabicNum(String(m).padStart(2,'0')) + ':' + toArabicNum(String(s).padStart(2,'0'));
   }
 
-  function playChime(){
-    if(!soundOn) return;
-    try{
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.value = 660;
-      g.gain.value = 0.0001;
-      o.connect(g); g.connect(ctx.destination);
-      const now = ctx.currentTime;
-      g.gain.exponentialRampToValueAtTime(0.12, now + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
-      o.start(now);
-      o.stop(now + 1);
-      o.onended = () => ctx.close();
-    }catch(e){ /* audio not available, ignore */ }
+  uploadZone.addEventListener('click', () => audioInput.click());
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag');
+    if(e.dataTransfer.files && e.dataTransfer.files[0]){
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+  audioInput.addEventListener('change', (e) => {
+    if(e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  function handleFile(file){
+    if(objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(file);
+    audioEl = new Audio(objectUrl);
+    fileNameEl.textContent = '✔ ' + file.name;
+    toggleBtn.disabled = false;
+    testBtn.disabled = false;
   }
 
-  function showDhikr(){
-    dhikrEl.textContent = currentDhikr;
-    dhikrEl.classList.remove('show');
-    void dhikrEl.offsetWidth; // restart animation
-    dhikrEl.classList.add('show');
-    playChime();
+  function playSound(){
+    if(!audioEl) return;
+    const clone = new Audio(objectUrl);
+    clone.play().catch(() => { /* المتصفح ممكن يمنع التشغيل التلقائي لحد ما المستخدم يتفاعل مرة واحدة */ });
   }
+
+  testBtn.addEventListener('click', playSound);
+
+  intervalSelect.addEventListener('change', () => {
+    intervalMinutes = parseFloat(intervalSelect.value);
+    intervalMs = intervalMinutes * 60 * 1000;
+    if(!running){
+      remainingMs = intervalMs;
+      countdownEl.textContent = formatCountdown(remainingMs);
+    }
+  });
 
   async function acquireWakeLock(){
     try{
@@ -322,9 +304,7 @@
         wakeLock = await navigator.wakeLock.request('screen');
         wakeLock.addEventListener('release', () => { wakeLock = null; });
       }
-    }catch(e){
-      // wake lock might fail (e.g. battery saver); silently continue
-    }
+    }catch(e){ /* ignore */ }
   }
   function releaseWakeLock(){
     if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
@@ -338,21 +318,23 @@
   function tick(){
     remainingMs -= 1000;
     if(remainingMs <= 0){
-      showDhikr();
-      remainingMs = INTERVAL_MS;
+      playSound();
+      remainingMs = intervalMs;
     }
     countdownEl.textContent = formatCountdown(remainingMs);
   }
 
   function start(){
+    if(!audioEl) return;
     running = true;
-    remainingMs = INTERVAL_MS;
+    remainingMs = intervalMs;
     statusDot.classList.add('live');
     statusText.textContent = 'شغال';
-    toggleBtn.textContent = 'إيقاف التذكير';
+    toggleBtn.textContent = 'إيقاف التشغيل';
     toggleBtn.classList.add('stop');
+    intervalSelect.disabled = true;
     countdownEl.textContent = formatCountdown(remainingMs);
-    showDhikr(); // اظهار الذكر فورًا عند البدء
+    playSound(); // تشغيل فوري أول ما تدوس ابدأ
     tickTimer = setInterval(tick, 1000);
     acquireWakeLock();
   }
@@ -361,8 +343,9 @@
     running = false;
     statusDot.classList.remove('live');
     statusText.textContent = 'متوقف';
-    toggleBtn.textContent = 'ابدأ التذكير';
+    toggleBtn.textContent = 'ابدأ التشغيل';
     toggleBtn.classList.remove('stop');
+    intervalSelect.disabled = false;
     clearInterval(tickTimer);
     releaseWakeLock();
   }
@@ -371,41 +354,6 @@
     running ? stop() : start();
   });
 
-  soundToggle.addEventListener('click', () => {
-    soundOn = !soundOn;
-    soundToggle.textContent = soundOn ? '🔔 الصوت: شغال' : '🔕 الصوت: مقفول';
-    soundToggle.classList.toggle('on', soundOn);
-  });
-
-  async function loadSaved(){
-    try{
-      const res = await window.storage.get('custom-dhikr');
-      if(res && res.value){
-        currentDhikr = res.value;
-        customInput.value = res.value;
-        dhikrEl.textContent = currentDhikr;
-      } else {
-        customInput.value = '';
-      }
-    }catch(e){
-      customInput.value = '';
-    }
-  }
-
-  saveBtn.addEventListener('click', async () => {
-    const val = customInput.value.trim();
-    currentDhikr = val.length ? val : DEFAULT_DHIKR;
-    try{
-      await window.storage.set('custom-dhikr', currentDhikr);
-    }catch(e){ /* storage may be unavailable, still update in-memory */ }
-    savedNote.classList.add('show');
-    setTimeout(() => savedNote.classList.remove('show'), 1800);
-    if(!running){
-      dhikrEl.textContent = currentDhikr;
-    }
-  });
-
-  loadSaved();
   countdownEl.textContent = formatCountdown(remainingMs);
 })();
 </script>
